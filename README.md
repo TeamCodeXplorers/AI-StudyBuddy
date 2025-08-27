@@ -59,6 +59,29 @@ An intelligent Flask-based web application that provides AI-powered study assist
 6. **Open your browser**
    Navigate to `http://localhost:5000`
 
+## 🌐 Deploy to Render
+
+1. Push this repo to GitHub.
+2. On Render, create a new Web Service from the repo.
+3. Environment: `Python`.
+4. Environment Variables:
+   - `GOOGLE_API_KEY` = your key
+   - `SECRET_KEY` = any random string
+   - Optional: `SQLITE_PATH` = `users.db` (default)
+5. Build Command:
+   ```bash
+   pip install -r requirements.txt
+   ```
+6. Start Command:
+   ```bash
+   gunicorn app:app
+   ```
+7. Optional health check path: `/health`.
+
+Notes:
+- This app uses SQLite by default. Render’s disk is ephemeral; for persistence across restarts, attach a Render Disk and set `SQLITE_PATH` to a mounted path like `/var/data/users.db`.
+- The database schema is auto-initialized on startup.
+
 ## 🔐 Security Features
 
 - **Password Hashing**: Passwords are hashed using SHA-256 with salt

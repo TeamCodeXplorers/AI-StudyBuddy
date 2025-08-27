@@ -27,7 +27,9 @@ model = genai.GenerativeModel("gemini-1.5-flash")
 # =========================
 # ✅ Database Setup
 # =========================
-DATABASE = "users.db"
+# Allow overriding the SQLite file path via environment variable.
+# This helps when running on platforms like Render.
+DATABASE = os.getenv("SQLITE_PATH", "users.db")
 
 def get_db():
     if "db" not in g:
@@ -53,6 +55,14 @@ def init_db():
             )"""
         )
         db.commit()
+
+# Ensure the database schema exists when the app is imported (e.g., under Gunicorn)
+if os.getenv("INITIALIZE_DB", "1") == "1":
+    try:
+        init_db()
+    except Exception as e:
+        # Avoid crashing on import; log instead. Startup will still proceed.
+        print(f"Database init warning: {e}")
 
 def hash_password(password):
     """Hash password using SHA-256 with salt"""
@@ -193,6 +203,11 @@ def users_api():
     rows = db.execute("SELECT id, username, created_at FROM users ORDER BY id DESC").fetchall()
     data = [dict(row) for row in rows]
     return jsonify(data)
+
+# Lightweight health check endpoint for Render
+@app.route("/health")
+def health_check():
+    return "ok", 200
 
 # =========================
 # ✅ Run App
