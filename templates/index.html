@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Study Buddy</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 AI Study Buddy</h1>
+        <p class="subtitle">Your intelligent companion for learning and studying</p>
+        
+        <div class="auth-buttons">
+            <a href="{{ url_for('login') }}" class="btn btn-primary">Login</a>
+            <a href="{{ url_for('signup') }}" class="btn btn-secondary">Sign Up</a>
+        </div>
+        
+        <div class="features">
+            <div class="feature">
+                <h3>📚 Study Assistance</h3>
+                <p>Get help with homework, explanations, and study tips</p>
+            </div>
+            <div class="feature">
+                <h3>💡 Problem Solving</h3>
+                <p>Break down complex problems step by step</p>
+            </div>
+            <div class="feature">
+                <h3>🎯 Personalized Learning</h3>
+                <p>Adaptive responses based on your questions</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | AI StudyBuddy</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header class="dashboard-header">
+            <h1>Welcome, {{ username }} 👋</h1>
+            <a href="{{ url_for('logout') }}" class="btn btn-outline">Logout</a>
+        </header>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        <div class="chat-container">
+            <form action="{{ url_for('ask') }}" method="post" class="question-form">
+                <div class="form-group">
+                    <label for="question">Ask me anything...</label>
+                    <div class="input-group">
+                        <input type="text" id="question" name="question" placeholder="e.g., Explain photosynthesis, help with math problem..." required>
+                        <button type="submit" class="btn btn-primary">Ask 🤖</button>
+                    </div>
+                </div>
+            </form>
+            
+            {% if question and answer %}
+                <div class="chat-history">
+                    <div class="message user-message">
+                        <div class="message-header">
+                            <span class="user-icon">👤 You</span>
+                            <span class="timestamp">Just now</span>
+                        </div>
+                        <div class="message-content">{{ question }}</div>
+                    </div>
+                    
+                    <div class="message ai-message">
+                        <div class="message-header">
+                            <span class="ai-icon">🤖 AI StudyBuddy</span>
+                            <span class="timestamp">Just now</span>
+                        </div>
+                        <div class="message-content">{{ answer }}</div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="quick-actions">
+            <h3>Quick Study Topics</h3>
+            <div class="topic-buttons">
+                <button class="topic-btn" onclick="askQuestion('Explain the water cycle in simple terms')">🌊 Water Cycle</button>
+                <button class="topic-btn" onclick="askQuestion('Help me solve: 2x + 5 = 13')">🔢 Math Help</button>
+                <button class="topic-btn" onclick="askQuestion('What are the main causes of World War II?')">📚 History</button>
+                <button class="topic-btn" onclick="askQuestion('Explain photosynthesis step by step')">🌱 Science</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function askQuestion(question) {
+            document.getElementById('question').value = question;
+            document.querySelector('.question-form').submit();
+        }
+    </script>
+</body>
+</html>
