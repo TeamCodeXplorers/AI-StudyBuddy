@@ -7,27 +7,75 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <div class="container">
-        <h1>🤖 AI Study Buddy</h1>
-        <p class="subtitle">Your intelligent companion for learning and studying</p>
-        
-        <div class="auth-buttons">
-            <a href="{{ url_for('login') }}" class="btn btn-primary">Login</a>
-            <a href="{{ url_for('signup') }}" class="btn btn-secondary">Sign Up</a>
-        </div>
-        
-        <div class="features">
-            <div class="feature">
-                <h3>📚 Study Assistance</h3>
-                <p>Get help with homework, explanations, and study tips</p>
+    <div class="hero-container">
+        <div class="hero-content">
+            <div class="hero-header">
+                <div class="logo-container">
+                    <div class="logo-icon">🤖</div>
+                    <h1 class="hero-title">AI Study Buddy</h1>
+                </div>
+                <p class="hero-subtitle">Your intelligent companion for learning and studying</p>
             </div>
-            <div class="feature">
-                <h3>💡 Problem Solving</h3>
-                <p>Break down complex problems step by step</p>
+            
+            <div class="hero-description">
+                <p>Transform your study sessions with AI-powered assistance, personalized learning, and smart study tools.</p>
             </div>
-            <div class="feature">
-                <h3>🎯 Personalized Learning</h3>
-                <p>Adaptive responses based on your questions</p>
+            
+            <div class="cta-section">
+                <div class="cta-buttons">
+                    <a href="{{ url_for('login') }}" class="btn btn-primary btn-large">
+                        <span class="btn-icon">🔐</span>
+                        Login
+                    </a>
+                    <a href="{{ url_for('signup') }}" class="btn btn-secondary btn-large">
+                        <span class="btn-icon">✨</span>
+                        Get Started
+                    </a>
+                </div>
+            </div>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">📚</div>
+                    <h3>Study Assistance</h3>
+                    <p>Get instant help with homework, explanations, and study tips from our AI tutor</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">⏰</div>
+                    <h3>Pomodoro Timer</h3>
+                    <p>Stay focused with customizable study sessions and break timers</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">📅</div>
+                    <h3>Study Schedule</h3>
+                    <p>Create and manage your personalized study timetable</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>Progress Tracking</h3>
+                    <p>Monitor your learning progress and achieve your study goals</p>
+                </div>
+            </div>
+            
+            <div class="hero-footer">
+                <p class="footer-text">Join thousands of students already using AI Study Buddy</p>
+                <div class="social-proof">
+                    <div class="proof-item">
+                        <span class="proof-number">500+</span>
+                        <span class="proof-label">Active Users</span>
+                    </div>
+                    <div class="proof-item">
+                        <span class="proof-number">1000+</span>
+                        <span class="proof-label">Questions Answered</span>
+                    </div>
+                    <div class="proof-item">
+                        <span class="proof-number">24/7</span>
+                        <span class="proof-label">AI Support</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

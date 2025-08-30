@@ -147,6 +147,33 @@ def ask():
         flash("Couldn't process question. Try again.", "error")
         return redirect(url_for("dashboard"))
 
+@app.route("/api/ask", methods=["POST"])
+def api_ask():
+    if "username" not in session:
+        return jsonify({"error": "Unauthorized"}), 401
+    
+    data = request.get_json()
+    if not data or not data.get("question"):
+        return jsonify({"error": "Question is required"}), 400
+    
+    question = sanitize(data["question"])
+    if not question:
+        return jsonify({"error": "Invalid question"}), 400
+    
+    try:
+        # Generate unique response for each question
+        response = model.generate_content(question)
+        return jsonify({
+            "success": True,
+            "answer": response.text,
+            "question": question
+        })
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": "Couldn't process question. Try again."
+        }), 500
+
 @app.route("/users")
 def users_page():
     if "username" not in session:

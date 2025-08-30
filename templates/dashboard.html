@@ -6,7 +6,7 @@
     <title>Dashboard | AI StudyBuddy</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body>
+<body class="dashboard-body">
     <div class="container">
         <header class="dashboard-header">
             <h1>Welcome, {{ username }} 👋</h1>
@@ -52,25 +52,28 @@
         <div id="ai-chat" class="section-content" style="display: none;">
             <div class="section-header">
                 <h2>🤖 Ask AI StudyBuddy</h2>
-                <button class="btn btn-outline" onclick="hideSection('ai-chat')">← Back</button>
+                <div class="header-buttons">
+                    <button class="btn btn-outline" onclick="clearChat()">Clear Chat</button>
+                    <button class="btn btn-outline" onclick="hideSection('ai-chat')">← Back</button>
+                </div>
             </div>
-            
-            <div class="chat-container">
+        
+        <div class="chat-container">
                 <form id="ai-form" class="question-form" onsubmit="return false;">
-                    <div class="form-group">
-                        <label for="question">Ask me anything...</label>
-                        <div class="input-group">
-                            <input type="text" id="question" name="question" placeholder="e.g., Explain photosynthesis, help with math problem..." required>
+                <div class="form-group">
+                    <label for="question">Ask me anything...</label>
+                    <div class="input-group">
+                        <input type="text" id="question" name="question" placeholder="e.g., Explain photosynthesis, help with math problem..." required>
                             <button type="button" onclick="askAI()" class="btn btn-primary">Ask 🤖</button>
-                        </div>
                     </div>
-                </form>
-                
+                </div>
+            </form>
+            
                 <div id="chat-history" class="chat-history" style="display: none;">
                     <div class="message user-message">
                         <div class="message-header">
                             <span class="user-icon">👤 You</span>
-                            <span class="timestamp">Just now</span>
+                            <span class="timestamp" id="user-timestamp">Just now</span>
                         </div>
                         <div class="message-content" id="user-question"></div>
                     </div>
@@ -78,20 +81,20 @@
                     <div class="message ai-message">
                         <div class="message-header">
                             <span class="ai-icon">🤖 AI StudyBuddy</span>
-                            <span class="timestamp">Just now</span>
+                            <span class="timestamp" id="ai-timestamp">Just now</span>
                         </div>
                         <div class="message-content" id="ai-answer"></div>
                     </div>
                 </div>
-            </div>
-            
-            <div class="quick-actions">
-                <h3>Quick Study Topics</h3>
-                <div class="topic-buttons">
-                    <button class="topic-btn" onclick="askQuestion('Explain the water cycle in simple terms')">🌊 Water Cycle</button>
-                    <button class="topic-btn" onclick="askQuestion('Help me solve: 2x + 5 = 13')">🔢 Math Help</button>
-                    <button class="topic-btn" onclick="askQuestion('What are the main causes of World War II?')">📚 History</button>
-                    <button class="topic-btn" onclick="askQuestion('Explain photosynthesis step by step')">🌱 Science</button>
+        </div>
+        
+        <div class="quick-actions">
+            <h3>Quick Study Topics</h3>
+            <div class="topic-buttons">
+                <button class="topic-btn" onclick="askQuestion('Explain the water cycle in simple terms')">🌊 Water Cycle</button>
+                <button class="topic-btn" onclick="askQuestion('Help me solve: 2x + 5 = 13')">🔢 Math Help</button>
+                <button class="topic-btn" onclick="askQuestion('What are the main causes of World War II?')">📚 History</button>
+                <button class="topic-btn" onclick="askQuestion('Explain photosynthesis step by step')">🌱 Science</button>
                 </div>
             </div>
         </div>
@@ -275,7 +278,14 @@
         
         function askQuestion(question) {
             document.getElementById('question').value = question;
+            // Clear previous chat history for new question
+            document.getElementById('chat-history').style.display = 'none';
             askAI();
+        }
+        
+        function clearChat() {
+            document.getElementById('chat-history').style.display = 'none';
+            document.getElementById('question').value = '';
         }
         
         async function askAI() {
@@ -292,16 +302,35 @@
             askBtn.disabled = true;
             
             try {
-                // Simulate AI response (replace with actual API call)
-                const response = await simulateAIResponse(question);
+                // Make real API call to Gemini
+                const response = await fetch('/api/ask', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ question: question })
+                });
                 
-                // Display the chat
-                document.getElementById('user-question').textContent = question;
-                document.getElementById('ai-answer').textContent = response;
-                document.getElementById('chat-history').style.display = 'block';
+                const data = await response.json();
                 
-                // Clear the input
-                document.getElementById('question').value = '';
+                if (data.success) {
+                    // Display the chat with real AI response
+                    document.getElementById('user-question').textContent = question;
+                    document.getElementById('ai-answer').textContent = data.answer;
+                    
+                    // Update timestamps
+                    const now = new Date();
+                    const timeString = now.toLocaleTimeString();
+                    document.getElementById('user-timestamp').textContent = timeString;
+                    document.getElementById('ai-timestamp').textContent = timeString;
+                    
+                    document.getElementById('chat-history').style.display = 'block';
+                    
+                    // Clear the input
+                    document.getElementById('question').value = '';
+                } else {
+                    alert('Error: ' + data.error);
+                }
                 
             } catch (error) {
                 alert('Error: ' + error.message);
@@ -310,33 +339,6 @@
                 askBtn.textContent = originalText;
                 askBtn.disabled = false;
             }
-        }
-        
-        function simulateAIResponse(question) {
-            // Simulate AI response for demo purposes
-            // In production, this would call your actual AI API
-            return new Promise((resolve) => {
-                setTimeout(() => {
-                    const responses = {
-                        'water cycle': 'The water cycle is the continuous movement of water on Earth. It includes evaporation, condensation, precipitation, and collection. Water evaporates from oceans, forms clouds, falls as rain, and returns to oceans.',
-                        'math': 'To solve 2x + 5 = 13, subtract 5 from both sides: 2x = 8, then divide by 2: x = 4.',
-                        'world war ii': 'World War II was caused by factors including the Treaty of Versailles, rise of fascism, economic depression, and territorial expansion by Germany, Italy, and Japan.',
-                        'photosynthesis': 'Photosynthesis is the process where plants convert sunlight, CO2, and water into glucose and oxygen. It occurs in chloroplasts and is essential for life on Earth.'
-                    };
-                    
-                    // Check for keywords in the question
-                    const lowerQuestion = question.toLowerCase();
-                    for (const [key, response] of Object.entries(responses)) {
-                        if (lowerQuestion.includes(key)) {
-                            resolve(response);
-                            return;
-                        }
-                    }
-                    
-                    // Default response
-                    resolve(`That's an interesting question about "${question}". I'd be happy to help you understand this topic better. Could you provide more specific details about what you'd like to know?`);
-                }, 1000);
-            });
         }
         
         // Pomodoro Timer Functions
