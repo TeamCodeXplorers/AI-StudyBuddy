@@ -21,25 +21,58 @@
             {% endif %}
         {% endwith %}
         
-        <div class="chat-container">
-            <form action="{{ url_for('ask') }}" method="post" class="question-form">
-                <div class="form-group">
-                    <label for="question">Ask me anything...</label>
-                    <div class="input-group">
-                        <input type="text" id="question" name="question" placeholder="e.g., Explain photosynthesis, help with math problem..." required>
-                        <button type="submit" class="btn btn-primary">Ask 🤖</button>
-                    </div>
-                </div>
-            </form>
+        <!-- Main Options Grid -->
+        <div class="options-grid">
+            <div class="option-card" onclick="showSection('ai-chat')">
+                <div class="option-icon">🤖</div>
+                <h3>Ask AI</h3>
+                <p>Get help with homework, explanations, and study tips</p>
+            </div>
             
-            {% if question and answer %}
-                <div class="chat-history">
+            <div class="option-card" onclick="showSection('pomodoro')">
+                <div class="option-icon">⏰</div>
+                <h3>Pomodoro Timer</h3>
+                <p>Stay focused with 25-minute study sessions</p>
+            </div>
+            
+            <div class="option-card" onclick="showSection('schedule')">
+                <div class="option-icon">📅</div>
+                <h3>Study Schedule</h3>
+                <p>Create and manage your study timetable</p>
+            </div>
+            
+            <div class="option-card" onclick="showSection('progress')">
+                <div class="option-icon">📊</div>
+                <h3>Progress Tracker</h3>
+                <p>Monitor your study progress and goals</p>
+            </div>
+        </div>
+        
+        <!-- AI Chat Section -->
+        <div id="ai-chat" class="section-content" style="display: none;">
+            <div class="section-header">
+                <h2>🤖 Ask AI StudyBuddy</h2>
+                <button class="btn btn-outline" onclick="hideSection('ai-chat')">← Back</button>
+            </div>
+            
+            <div class="chat-container">
+                <form id="ai-form" class="question-form" onsubmit="return false;">
+                    <div class="form-group">
+                        <label for="question">Ask me anything...</label>
+                        <div class="input-group">
+                            <input type="text" id="question" name="question" placeholder="e.g., Explain photosynthesis, help with math problem..." required>
+                            <button type="button" onclick="askAI()" class="btn btn-primary">Ask 🤖</button>
+                        </div>
+                    </div>
+                </form>
+                
+                <div id="chat-history" class="chat-history" style="display: none;">
                     <div class="message user-message">
                         <div class="message-header">
                             <span class="user-icon">👤 You</span>
                             <span class="timestamp">Just now</span>
                         </div>
-                        <div class="message-content">{{ question }}</div>
+                        <div class="message-content" id="user-question"></div>
                     </div>
                     
                     <div class="message ai-message">
@@ -47,28 +80,461 @@
                             <span class="ai-icon">🤖 AI StudyBuddy</span>
                             <span class="timestamp">Just now</span>
                         </div>
-                        <div class="message-content">{{ answer }}</div>
+                        <div class="message-content" id="ai-answer"></div>
                     </div>
                 </div>
-            {% endif %}
+            </div>
+            
+            <div class="quick-actions">
+                <h3>Quick Study Topics</h3>
+                <div class="topic-buttons">
+                    <button class="topic-btn" onclick="askQuestion('Explain the water cycle in simple terms')">🌊 Water Cycle</button>
+                    <button class="topic-btn" onclick="askQuestion('Help me solve: 2x + 5 = 13')">🔢 Math Help</button>
+                    <button class="topic-btn" onclick="askQuestion('What are the main causes of World War II?')">📚 History</button>
+                    <button class="topic-btn" onclick="askQuestion('Explain photosynthesis step by step')">🌱 Science</button>
+                </div>
+            </div>
         </div>
         
-        <div class="quick-actions">
-            <h3>Quick Study Topics</h3>
-            <div class="topic-buttons">
-                <button class="topic-btn" onclick="askQuestion('Explain the water cycle in simple terms')">🌊 Water Cycle</button>
-                <button class="topic-btn" onclick="askQuestion('Help me solve: 2x + 5 = 13')">🔢 Math Help</button>
-                <button class="topic-btn" onclick="askQuestion('What are the main causes of World War II?')">📚 History</button>
-                <button class="topic-btn" onclick="askQuestion('Explain photosynthesis step by step')">🌱 Science</button>
+        <!-- Pomodoro Timer Section -->
+        <div id="pomodoro" class="section-content" style="display: none;">
+            <div class="section-header">
+                <h2>⏰ Pomodoro Timer</h2>
+                <button class="btn btn-outline" onclick="hideSection('pomodoro')">← Back</button>
+            </div>
+            
+            <div class="pomodoro-container">
+                <div class="timer-display">
+                    <div class="time-left" id="time-left">25:00</div>
+                    <div class="timer-status" id="timer-status">Ready to start</div>
+                </div>
+                
+                <div class="timer-controls">
+                    <button class="btn btn-primary" onclick="startTimer()" id="start-btn">Start</button>
+                    <button class="btn btn-secondary" onclick="pauseTimer()" id="pause-btn" disabled>Pause</button>
+                    <button class="btn btn-outline" onclick="resetTimer()">Reset</button>
+                </div>
+                
+                <div class="timer-settings">
+                    <div class="setting-group">
+                        <label>Study Time (minutes):</label>
+                        <input type="number" id="study-time" value="25" min="1" max="120" onchange="initializeTimer()">
+                    </div>
+                    <div class="setting-group">
+                        <label>Break Time (minutes):</label>
+                        <input type="number" id="break-time" value="5" min="1" max="60" onchange="initializeTimer()">
+                    </div>
+                </div>
+                
+                <div class="session-info">
+                    <div class="session-count">Sessions completed: <span id="session-count">0</span></div>
+                    <div class="total-time">Total study time: <span id="total-time">0</span> minutes</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Study Schedule Section -->
+        <div id="schedule" class="section-content" style="display: none;">
+            <div class="section-header">
+                <h2>📅 Study Schedule</h2>
+                <button class="btn btn-outline" onclick="hideSection('schedule')">← Back</button>
+            </div>
+            
+            <div class="schedule-container">
+                <div class="add-task">
+                    <h3>Add New Task</h3>
+                    <form id="task-form" class="task-form">
+                        <div class="form-row">
+                            <input type="text" id="task-name" placeholder="Task name" required>
+                            <input type="time" id="task-time" required>
+                            <select id="task-day" required>
+                                <option value="">Select day</option>
+                                <option value="monday">Monday</option>
+                                <option value="tuesday">Tuesday</option>
+                                <option value="wednesday">Wednesday</option>
+                                <option value="thursday">Thursday</option>
+                                <option value="friday">Friday</option>
+                                <option value="saturday">Saturday</option>
+                                <option value="sunday">Sunday</option>
+                            </select>
+                            <button type="submit" class="btn btn-primary">Add Task</button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="schedule-display">
+                    <h3>Your Schedule</h3>
+                    <div id="schedule-list" class="schedule-list">
+                        <!-- Tasks will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Progress Tracker Section -->
+        <div id="progress" class="section-content" style="display: none;">
+            <div class="section-header">
+                <h2>📊 Progress Tracker</h2>
+                <button class="btn btn-outline" onclick="hideSection('progress')">← Back</button>
+            </div>
+            
+            <div class="progress-container">
+                <div class="progress-stats">
+                    <div class="stat-card">
+                        <div class="stat-number" id="total-sessions">0</div>
+                        <div class="stat-label">Total Sessions</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="total-hours">0</div>
+                        <div class="stat-label">Total Hours</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="streak-days">0</div>
+                        <div class="stat-label">Day Streak</div>
+                    </div>
+                </div>
+                
+                <div class="progress-chart">
+                    <h3>Weekly Progress</h3>
+                    <div class="chart-container">
+                        <div class="chart-bar" data-day="Mon" data-value="0"></div>
+                        <div class="chart-bar" data-day="Tue" data-value="0"></div>
+                        <div class="chart-bar" data-day="Wed" data-value="0"></div>
+                        <div class="chart-bar" data-day="Thu" data-value="0"></div>
+                        <div class="chart-bar" data-day="Fri" data-value="0"></div>
+                        <div class="chart-bar" data-day="Sat" data-value="0"></div>
+                        <div class="chart-bar" data-day="Sun" data-value="0"></div>
+                    </div>
+                </div>
+                
+                <div class="goals-section">
+                    <h3>Study Goals</h3>
+                    <form id="goal-form" class="goal-form">
+                        <input type="text" id="goal-description" placeholder="Enter your study goal" required>
+                        <button type="submit" class="btn btn-primary">Add Goal</button>
+                    </form>
+                    <div id="goals-list" class="goals-list">
+                        <!-- Goals will be populated here -->
+                    </div>
+                </div>
             </div>
         </div>
     </div>
     
     <script>
+        let timerInterval;
+        let timeLeft = 1500; // 25 minutes in seconds
+        let isRunning = false;
+        let isBreak = false;
+        let sessionCount = 0;
+        let totalStudyTime = 0;
+        
+        // Initialize timer with current settings
+        function initializeTimer() {
+            timeLeft = parseInt(document.getElementById('study-time').value) * 60;
+            updateTimerDisplay();
+        }
+        
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.section-content').forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // Show selected section
+            document.getElementById(sectionId).style.display = 'block';
+            
+            // Hide options grid
+            document.querySelector('.options-grid').style.display = 'none';
+            
+            // Initialize timer if showing pomodoro section
+            if (sectionId === 'pomodoro') {
+                initializeTimer();
+            }
+        }
+        
+        function hideSection(sectionId) {
+            // Hide section
+            document.getElementById(sectionId).style.display = 'none';
+            
+            // Show options grid
+            document.querySelector('.options-grid').style.display = 'grid';
+            
+            // Clear any form data or reset timers if needed
+            if (sectionId === 'pomodoro') {
+                // Reset timer when going back
+                clearInterval(timerInterval);
+                isRunning = false;
+                isBreak = false;
+                initializeTimer();
+                document.getElementById('timer-status').textContent = 'Ready to start';
+                document.getElementById('start-btn').disabled = false;
+                document.getElementById('pause-btn').disabled = true;
+            }
+        }
+        
         function askQuestion(question) {
             document.getElementById('question').value = question;
-            document.querySelector('.question-form').submit();
+            askAI();
         }
+        
+        async function askAI() {
+            const question = document.getElementById('question').value.trim();
+            if (!question) {
+                alert('Please enter a question');
+                return;
+            }
+            
+            // Show loading state
+            const askBtn = document.querySelector('#ai-form button');
+            const originalText = askBtn.textContent;
+            askBtn.textContent = 'Thinking...';
+            askBtn.disabled = true;
+            
+            try {
+                // Simulate AI response (replace with actual API call)
+                const response = await simulateAIResponse(question);
+                
+                // Display the chat
+                document.getElementById('user-question').textContent = question;
+                document.getElementById('ai-answer').textContent = response;
+                document.getElementById('chat-history').style.display = 'block';
+                
+                // Clear the input
+                document.getElementById('question').value = '';
+                
+            } catch (error) {
+                alert('Error: ' + error.message);
+            } finally {
+                // Reset button state
+                askBtn.textContent = originalText;
+                askBtn.disabled = false;
+            }
+        }
+        
+        function simulateAIResponse(question) {
+            // Simulate AI response for demo purposes
+            // In production, this would call your actual AI API
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    const responses = {
+                        'water cycle': 'The water cycle is the continuous movement of water on Earth. It includes evaporation, condensation, precipitation, and collection. Water evaporates from oceans, forms clouds, falls as rain, and returns to oceans.',
+                        'math': 'To solve 2x + 5 = 13, subtract 5 from both sides: 2x = 8, then divide by 2: x = 4.',
+                        'world war ii': 'World War II was caused by factors including the Treaty of Versailles, rise of fascism, economic depression, and territorial expansion by Germany, Italy, and Japan.',
+                        'photosynthesis': 'Photosynthesis is the process where plants convert sunlight, CO2, and water into glucose and oxygen. It occurs in chloroplasts and is essential for life on Earth.'
+                    };
+                    
+                    // Check for keywords in the question
+                    const lowerQuestion = question.toLowerCase();
+                    for (const [key, response] of Object.entries(responses)) {
+                        if (lowerQuestion.includes(key)) {
+                            resolve(response);
+                            return;
+                        }
+                    }
+                    
+                    // Default response
+                    resolve(`That's an interesting question about "${question}". I'd be happy to help you understand this topic better. Could you provide more specific details about what you'd like to know?`);
+                }, 1000);
+            });
+        }
+        
+        // Pomodoro Timer Functions
+        function startTimer() {
+            if (!isRunning) {
+                isRunning = true;
+                timerInterval = setInterval(updateTimer, 1000);
+                document.getElementById('timer-status').textContent = isBreak ? 'Break time!' : 'Study time!';
+                document.getElementById('start-btn').disabled = true;
+                document.getElementById('pause-btn').disabled = false;
+            }
+        }
+        
+        function pauseTimer() {
+            if (isRunning) {
+                isRunning = false;
+                clearInterval(timerInterval);
+                document.getElementById('timer-status').textContent = 'Paused';
+                document.getElementById('start-btn').disabled = false;
+                document.getElementById('pause-btn').disabled = true;
+            }
+        }
+        
+        function resetTimer() {
+            clearInterval(timerInterval);
+            isRunning = false;
+            isBreak = false;
+            initializeTimer();
+            document.getElementById('timer-status').textContent = 'Ready to start';
+            document.getElementById('start-btn').disabled = false;
+            document.getElementById('pause-btn').disabled = true;
+        }
+        
+        function updateTimer() {
+            timeLeft--;
+            if (timeLeft <= 0) {
+                if (!isBreak) {
+                    // Study session completed
+                    sessionCount++;
+                    const studyTime = parseInt(document.getElementById('study-time').value);
+                    totalStudyTime += studyTime;
+                    timeLeft = parseInt(document.getElementById('break-time').value) * 60;
+                    isBreak = true;
+                    document.getElementById('timer-status').textContent = 'Break time!';
+                    updateStats();
+                    
+                    // Show notification
+                    if (Notification.permission === 'granted') {
+                        new Notification('Study Session Complete!', {
+                            body: 'Time for a break!',
+                            icon: '🤖'
+                        });
+                    }
+                } else {
+                    // Break completed
+                    timeLeft = parseInt(document.getElementById('study-time').value) * 60;
+                    isBreak = false;
+                    document.getElementById('timer-status').textContent = 'Study time!';
+                    
+                    // Show notification
+                    if (Notification.permission === 'granted') {
+                        new Notification('Break Complete!', {
+                            body: 'Time to study again!',
+                            icon: '⏰'
+                        });
+                    }
+                }
+            }
+            updateTimerDisplay();
+        }
+        
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            document.getElementById('time-left').textContent = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+        
+        function updateStats() {
+            document.getElementById('session-count').textContent = sessionCount;
+            document.getElementById('total-time').textContent = totalStudyTime;
+        }
+        
+        // Study Schedule Functions
+        document.getElementById('task-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            addTask();
+        });
+        
+        function addTask() {
+            const taskName = document.getElementById('task-name').value;
+            const taskTime = document.getElementById('task-time').value;
+            const taskDay = document.getElementById('task-day').value;
+            
+            if (taskName && taskTime && taskDay) {
+                const task = { name: taskName, time: taskTime, day: taskDay };
+                saveTask(task);
+                displayTasks();
+                document.getElementById('task-form').reset();
+            }
+        }
+        
+        function saveTask(task) {
+            let tasks = JSON.parse(localStorage.getItem('studyTasks') || '[]');
+            tasks.push(task);
+            localStorage.setItem('studyTasks', JSON.stringify(tasks));
+        }
+        
+        function displayTasks() {
+            const tasks = JSON.parse(localStorage.getItem('studyTasks') || '[]');
+            const scheduleList = document.getElementById('schedule-list');
+            
+            scheduleList.innerHTML = '';
+            tasks.forEach((task, index) => {
+                const taskElement = document.createElement('div');
+                taskElement.className = 'schedule-task';
+                taskElement.innerHTML = `
+                    <span class="task-name">${task.name}</span>
+                    <span class="task-time">${task.time}</span>
+                    <span class="task-day">${task.day}</span>
+                    <button onclick="deleteTask(${index})" class="btn btn-outline">Delete</button>
+                `;
+                scheduleList.appendChild(taskElement);
+            });
+        }
+        
+        function deleteTask(index) {
+            let tasks = JSON.parse(localStorage.getItem('studyTasks') || '[]');
+            tasks.splice(index, 1);
+            localStorage.setItem('studyTasks', JSON.stringify(tasks));
+            displayTasks();
+        }
+        
+        // Progress Tracker Functions
+        document.getElementById('goal-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            addGoal();
+        });
+        
+        function addGoal() {
+            const goalDescription = document.getElementById('goal-description').value;
+            if (goalDescription) {
+                const goal = { description: goalDescription, completed: false };
+                saveGoal(goal);
+                displayGoals();
+                document.getElementById('goal-form').reset();
+            }
+        }
+        
+        function saveGoal(goal) {
+            let goals = JSON.parse(localStorage.getItem('studyGoals') || '[]');
+            goals.push(goal);
+            localStorage.setItem('studyGoals', JSON.stringify(goals));
+        }
+        
+        function displayGoals() {
+            const goals = JSON.parse(localStorage.getItem('studyGoals') || '[]');
+            const goalsList = document.getElementById('goals-list');
+            
+            goalsList.innerHTML = '';
+            goals.forEach((goal, index) => {
+                const goalElement = document.createElement('div');
+                goalElement.className = 'goal-item';
+                goalElement.innerHTML = `
+                    <span class="goal-text ${goal.completed ? 'completed' : ''}">${goal.description}</span>
+                    <button onclick="toggleGoal(${index})" class="btn ${goal.completed ? 'btn-success' : 'btn-outline'}">
+                        ${goal.completed ? '✓' : 'Mark Complete'}
+                    </button>
+                    <button onclick="deleteGoal(${index})" class="btn btn-outline">Delete</button>
+                `;
+                goalsList.appendChild(goalElement);
+            });
+        }
+        
+        function toggleGoal(index) {
+            let goals = JSON.parse(localStorage.getItem('studyGoals') || '[]');
+            goals[index].completed = !goals[index].completed;
+            localStorage.setItem('studyGoals', JSON.stringify(goals));
+            displayGoals();
+        }
+        
+        function deleteGoal(index) {
+            let goals = JSON.parse(localStorage.getItem('studyGoals') || '[]');
+            goals.splice(index, 1);
+            localStorage.setItem('studyGoals', JSON.stringify(goals));
+            displayGoals();
+        }
+        
+        // Initialize displays and request notification permission
+        document.addEventListener('DOMContentLoaded', function() {
+            displayTasks();
+            displayGoals();
+            
+            // Request notification permission for Pomodoro timer
+            if ('Notification' in window) {
+                Notification.requestPermission();
+            }
+        });
     </script>
 </body>
 </html>

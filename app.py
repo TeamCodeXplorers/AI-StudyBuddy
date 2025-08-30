@@ -130,7 +130,7 @@ def logout():
 def ask():
     if "username" not in session:
         flash("Please login", "error")
-        return redirect(url_for("login"))
+        return redirect(url_for("dashboard"))
     
     question = sanitize(request.form.get("question"))
     if not question:
